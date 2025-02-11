@@ -1,3 +1,8 @@
+package main;
+
+import manager.TaskManager;
+import model.*;
+
 public class Main {
 
     public static void main(String[] args) {
@@ -88,6 +93,10 @@ public class Main {
         for (Epic epic : manager.getAllEpics()) {
             System.out.println(epic);
         }
-
+        // Тестируем новый метод
+        System.out.println("\nПодзадачи для эпика 2:");
+        for (Subtask subtask : manager.getSubtasksByEpicId(epicId2)) {
+            System.out.println(subtask);
+        }
     }
 }

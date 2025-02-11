@@ -1,3 +1,7 @@
+package manager;
+
+import model.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -61,6 +65,20 @@ public class TaskManager {
 
     public List<Task> getAllTasks() {
         return new ArrayList<>(tasks.values());
+    }
+
+    public List<Subtask> getSubtasksByEpicId(int epicId) {
+        List<Subtask> subtasksForEpic = new ArrayList<>();
+        Epic epic = epics.get(epicId);
+        if (epic != null) {
+            for (int subtaskId : epic.getSubtaskIds()) {
+                Subtask subtask = subtasks.get(subtaskId);
+                if (subtask != null) {
+                    subtasksForEpic.add(subtask);
+                }
+            }
+        }
+        return subtasksForEpic;
     }
 
     public List<Subtask> getAllSubtasks() {
