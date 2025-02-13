@@ -102,6 +102,7 @@ public class InMemoryTaskManager implements TaskManager {
         Task task = tasks.get(id);
         if (task != null) {
             addToHistory(task);
+            return new Task(task);//Возвращаем копию
         }
         return task;
     }
