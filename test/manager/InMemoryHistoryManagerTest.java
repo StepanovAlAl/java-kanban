@@ -2,27 +2,31 @@ package manager;
 
 import model.Task;
 import org.junit.jupiter.api.Test;
+import java.util.ArrayList;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class InMemoryHistoryManagerTest {
 
     private HistoryManager historyManager = Managers.getDefaultHistory();
 
-    @Test
-    void testAddToHistory() {
-        Task task = new Task("Task 1", "Description 1");
-        historyManager.add(task);
-
-        assertEquals(1, historyManager.getHistory().size(), "История должна содержать одну задачу.");
-    }
 
     @Test
-    void testHistoryPreservesTaskData() {
-        Task task = new Task("Task 1", "Description 1");
-        historyManager.add(task);
+    void testHistorySizeLimit() {
+        HistoryManager historyManager = new InMemoryHistoryManager();
 
-        Task savedTask = historyManager.getHistory().get(0);
+        // Добавляем 11 задач
+        for (int i = 1; i <= 11; i++) {
+            Task task = new Task("Task " + i, "Description " + i);
+            task.setId(i);
+            historyManager.add(task);
+        }
 
-        assertEquals(task, savedTask, "Задача в истории должна сохранять свои данные.");
+        // Проверяем, что в истории только 10 задач
+        ArrayList<Task> history = historyManager.getHistory();
+        assertEquals(10, history.size(), "История должна содержать не более 10 задач.");
+
+        // Проверяем, что первая задача (Task 1) была удалена
+        assertNotEquals(1, history.get(0).getId(), "Первая задача должна быть удалена из истории.");
     }
 }
