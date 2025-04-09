@@ -13,7 +13,7 @@ public class Task {
         this.description = description;
         this.status = Status.NEW;
     }
-    
+
     //Создание копии
     public Task(Task other) {
         this.id = other.id;
