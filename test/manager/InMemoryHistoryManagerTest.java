@@ -13,6 +13,7 @@ class InMemoryHistoryManagerTest {
     private Task task1;
     private Task task2;
     private Task task3;
+    private Task task4;
 
     @BeforeEach
     void setUp() {
@@ -23,6 +24,8 @@ class InMemoryHistoryManagerTest {
         task2.setId(2);
         task3 = new Task("Task 3", "Description 3");
         task3.setId(3);
+        task4 = new Task("Task 4", "Description 4");
+        task4.setId(4);
     }
 
     @Test
@@ -30,7 +33,7 @@ class InMemoryHistoryManagerTest {
         historyManager.add(task1);
         final List<Task> history = historyManager.getHistory();
         assertNotNull(history, "История не пустая.");
-        assertEquals(1, history.size(), "История не пустая.");
+        assertEquals(1, history.size(), "История должна содержать 1 задачу.");
         assertEquals(task1, history.get(0), "Задачи не совпадают.");
     }
 
@@ -41,9 +44,9 @@ class InMemoryHistoryManagerTest {
         historyManager.add(task1);
 
         final List<Task> history = historyManager.getHistory();
-        assertEquals(2, history.size(), "Неверное количество задач в истории.");
-        assertEquals(task2, history.get(0), "Первая задача не совпадает.");
-        assertEquals(task1, history.get(1), "Вторая задача не совпадает.");
+        assertEquals(2, history.size(), "Дубликаты не удаляются.");
+        assertEquals(task2, history.get(0), "Первая задача не совпадает. Неверный порядок задач.");
+        assertEquals(task1, history.get(1), "Вторая задача не совпадает. Неверный порядок задач.");
     }
 
     @Test
@@ -73,6 +76,23 @@ class InMemoryHistoryManagerTest {
         assertEquals(task2, history.get(0), "Оставшаяся задача не совпадает.");
     }
 
+
+    @Test
+    void removeMiddleWorkCorrectly() {
+        historyManager.add(task1);
+        historyManager.add(task2);
+        historyManager.add(task3);
+        historyManager.add(task4);
+
+        historyManager.remove(task2.getId());
+
+        final List<Task> history = historyManager.getHistory();
+        assertEquals(3, history.size(), "Неверное количество задач после удаления из середины");
+        assertEquals(task1, history.get(0), "Первая задача не совпадает после удаления из середины.");
+        assertEquals(task3, history.get(1), "Вторая задача не совпадает после удаления из середины.");
+        assertEquals(task4, history.get(2), "Третья задача не совпадает после удаления из середины.");
+    }
+
     @Test
     void removeLastShouldWorkCorrectly() {
         historyManager.add(task1);
@@ -83,6 +103,21 @@ class InMemoryHistoryManagerTest {
         final List<Task> history = historyManager.getHistory();
         assertEquals(1, history.size(), "Неверное количество задач в истории.");
         assertEquals(task1, history.get(0), "Оставшаяся задача не совпадает.");
+    }
+
+    @Test
+    void removeSingleShouldWorkCorrectly() {
+        historyManager.add(task1);
+        historyManager.remove(task1.getId());
+
+        final List<Task> history = historyManager.getHistory();
+        assertTrue(history.isEmpty(), "История должна быть пустой после удаления единственной задачи");
+    }
+
+    @Test
+    void removeFromEmptyHistoryShouldNotFail() {
+        assertDoesNotThrow(() -> historyManager.remove(1),
+                "Удаление из пустой истории не должно вызывать исключений");
     }
 
     @Test
@@ -100,8 +135,8 @@ class InMemoryHistoryManagerTest {
 
         final List<Task> history = historyManager.getHistory();
         assertEquals(3, history.size(), "Неверное количество задач в истории.");
-        assertEquals(task1, history.get(0), "Первая задача не совпадает.");
-        assertEquals(task2, history.get(1), "Вторая задача не совпадает.");
-        assertEquals(task3, history.get(2), "Третья задача не совпадает.");
+        assertEquals(task1, history.get(0), "Неверный порядок задач. Первая задача не совпадает.");
+        assertEquals(task2, history.get(1), "Неверный порядок задач. Вторая задача не совпадает.");
+        assertEquals(task3, history.get(2), "Неверный порядок задач. Третья задача не совпадает.");
     }
 }

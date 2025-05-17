@@ -13,9 +13,17 @@ public class InMemoryHistoryManager implements HistoryManager {
         Node prev;
         Node next;
 
-        Node(Task task) {
+        //Node(Task task) {
+        //    this.task = task;
+        //}
+
+        //Нода со ссылкой на тейл
+        Node(Task task, Node prev) {
             this.task = task;
+            this.prev = prev;
+            this.next = null;
         }
+
     }
 
     private final Map<Integer, Node> historyMap = new HashMap<>();
@@ -57,12 +65,11 @@ public class InMemoryHistoryManager implements HistoryManager {
     }
 
     private void linkLast(Task task) {
-        Node newNode = new Node(task);
+        Node newNode = new Node(task, tail);//Нода сразу со ссылкой на тейл, новый конструктор (третий параметр не нужен)
         if (tail == null) {
             head = newNode;
         } else {
             tail.next = newNode;
-            newNode.prev = tail;
         }
         tail = newNode;
         historyMap.put(task.getId(), newNode);
