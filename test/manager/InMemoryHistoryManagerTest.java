@@ -88,9 +88,7 @@ class InMemoryHistoryManagerTest {
 
         final List<Task> history = historyManager.getHistory();
         assertEquals(3, history.size(), "Неверное количество задач после удаления из середины");
-        assertEquals(task1, history.get(0), "Первая задача не совпадает после удаления из середины.");
-        assertEquals(task3, history.get(1), "Вторая задача не совпадает после удаления из середины.");
-        assertEquals(task4, history.get(2), "Третья задача не совпадает после удаления из середины.");
+        assertEquals(List.of(task1, task3, task4), history, "Неверный порядок задач после удаления из середины");
     }
 
     @Test
@@ -135,8 +133,6 @@ class InMemoryHistoryManagerTest {
 
         final List<Task> history = historyManager.getHistory();
         assertEquals(3, history.size(), "Неверное количество задач в истории.");
-        assertEquals(task1, history.get(0), "Неверный порядок задач. Первая задача не совпадает.");
-        assertEquals(task2, history.get(1), "Неверный порядок задач. Вторая задача не совпадает.");
-        assertEquals(task3, history.get(2), "Неверный порядок задач. Третья задача не совпадает.");
+        assertEquals(List.of(task1, task2, task3), history, "Неверный порядок задач");
     }
 }

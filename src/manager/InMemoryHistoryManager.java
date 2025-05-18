@@ -1,6 +1,7 @@
 package manager;
 
 import model.Task;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,15 +14,11 @@ public class InMemoryHistoryManager implements HistoryManager {
         Node prev;
         Node next;
 
-        //Node(Task task) {
-        //    this.task = task;
-        //}
-
         //Нода со ссылкой на тейл
-        Node(Task task, Node prev) {
+        Node(Task task, Node prev, Node next) {
             this.task = task;
             this.prev = prev;
-            this.next = null;
+            this.next = next;
         }
 
     }
@@ -41,7 +38,7 @@ public class InMemoryHistoryManager implements HistoryManager {
 
         // Добавляем задачу в конец списка
         linkLast(task);
-        }
+    }
 
     @Override
     public void remove(int id) {
@@ -65,7 +62,7 @@ public class InMemoryHistoryManager implements HistoryManager {
     }
 
     private void linkLast(Task task) {
-        Node newNode = new Node(task, tail);//Нода сразу со ссылкой на тейл, новый конструктор (третий параметр не нужен)
+        Node newNode = new Node(task, tail, null);//Нода сразу со ссылкой на тейл, новый конструктор (третий параметр не нужен)
         if (tail == null) {
             head = newNode;
         } else {

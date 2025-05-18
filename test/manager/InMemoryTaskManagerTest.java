@@ -130,4 +130,60 @@ class InMemoryTaskManagerTest {
 
         assertEquals(1, taskManager.getHistory().size(), "История содержит дубликаты.");
     }
+
+    @Test
+    void deleteAllTasksShouldWork() {
+        Task task1 = new Task("Task 1", "Description");
+        Task task2 = new Task("Task 2", "Description");
+        taskManager.createTask(task1);
+        taskManager.createTask(task2);
+
+        taskManager.getTaskById(task1.getId()); // Добавляем в историю
+        taskManager.deleteAllTasks();
+
+        assertTrue(taskManager.getAllTasks().isEmpty(), "Задачи не удалены");
+        assertTrue(taskManager.getHistory().isEmpty(), "История не очищена");
+    }
+
+    @Test
+    void deleteAllSubtasksShouldWork() {
+        Epic epic = new Epic("Epic", "Description");
+        int epicId = taskManager.createEpic(epic);
+        Subtask subtask1 = new Subtask("Subtask 1", "Description", epicId);
+        Subtask subtask2 = new Subtask("Subtask 2", "Description", epicId);
+        taskManager.createSubtask(subtask1);
+        taskManager.createSubtask(subtask2);
+
+        taskManager.getSubtaskById(subtask1.getId()); // Добавляем в историю
+        taskManager.deleteAllSubtasks();
+
+        assertTrue(taskManager.getAllSubtasks().isEmpty(), "Подзадачи не удалены");
+        assertTrue(taskManager.getEpicById(epicId).getSubtaskIds().isEmpty(), "Подзадачи не удалены из эпика");
+        assertEquals(Status.NEW, taskManager.getEpicById(epicId).getStatus(), "Статус эпика не обновлен");
+
+        // Проверяем что подзадач нет в истории
+        for (Task task : taskManager.getHistory()) {
+            assertNotEquals(Subtask.class, task.getClass(), "В истории осталась подзадача");
+        }
+    }
+
+    @Test
+    void deleteAllEpicsShouldWork() {
+        Epic epic1 = new Epic("Epic 1", "Description");
+        Epic epic2 = new Epic("Epic 2", "Description");
+        int epicId1 = taskManager.createEpic(epic1);
+        int epicId2 = taskManager.createEpic(epic2);
+        Subtask subtask1 = new Subtask("Subtask 1", "Description", epicId1);
+        Subtask subtask2 = new Subtask("Subtask 2", "Description", epicId2);
+        taskManager.createSubtask(subtask1);
+        taskManager.createSubtask(subtask2);
+
+        taskManager.getEpicById(epicId1); // Добавляем в историю
+        taskManager.getSubtaskById(subtask1.getId()); // Добавляем в историю
+        taskManager.deleteAllEpics();
+
+        assertTrue(taskManager.getAllEpics().isEmpty(), "Эпики не удалены");
+        assertTrue(taskManager.getAllSubtasks().isEmpty(), "Подзадачи не удалены");
+        assertTrue(taskManager.getHistory().isEmpty(), "История не очищена");
+    }
 }
