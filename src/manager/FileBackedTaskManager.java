@@ -1,6 +1,7 @@
 package manager;
 
 import model.*;
+
 import java.io.*;
 import java.nio.file.Files;
 
@@ -191,11 +192,5 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public void deleteAllEpics() {
         super.deleteAllEpics();
         save();
-    }
-}
-
-class ManagerSaveException extends RuntimeException {
-    public ManagerSaveException(String message, Throwable cause) {
-        super(message, cause);
     }
 }
