@@ -1,6 +1,7 @@
 package manager;
 
 import model.*;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -8,11 +9,17 @@ import java.io.File;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FileBackedTaskManagerTest {
+    private File file;
+    private FileBackedTaskManager manager;
+
+    @BeforeEach
+    void setUp() throws Exception {
+        file = File.createTempFile("tasks", ".csv");
+        manager = new FileBackedTaskManager(file);
+    }
 
     @Test
     void testSaveAndLoadEmptyFile() throws Exception {
-        File file = File.createTempFile("test", ".csv");
-        FileBackedTaskManager manager = new FileBackedTaskManager(file);
 
         manager.save();
 
@@ -25,18 +32,16 @@ class FileBackedTaskManagerTest {
 
     @Test
     void testSaveAndLoadWithTasks() throws Exception {
-        File file = File.createTempFile("test", ".csv");
-        FileBackedTaskManager manager = new FileBackedTaskManager(file);
 
         // Создаем задачи
-        Task task = new Task("Task", "Description");
-        manager.createTask(task);
+        Task task = new TaskInstance("Task", "Description");
+        int taskId = manager.createTask(task);
 
         Epic epic = new Epic("Epic", "Epic description");
         int epicId = manager.createEpic(epic);
 
         Subtask subtask = new Subtask("Subtask", "Sub desc", epicId);
-        manager.createSubtask(subtask);
+        int subtaskId = manager.createSubtask(subtask);
 
         // Загружаем обратно
         FileBackedTaskManager loaded = FileBackedTaskManager.loadFromFile(file);
@@ -44,5 +49,22 @@ class FileBackedTaskManagerTest {
         assertEquals(1, loaded.getAllTasks().size());
         assertEquals(1, loaded.getAllEpics().size());
         assertEquals(1, loaded.getAllSubtasks().size());
+        Task savedTask = loaded.getTaskById(taskId);
+        assertEquals(task.getName(), savedTask.getName());
+        assertEquals(task.getDescription(), savedTask.getDescription());
+        assertEquals(task.getStatus(), savedTask.getStatus());
+
+        Epic savedEpic = loaded.getEpicById(epicId);
+        assertEquals(epic.getName(), savedEpic.getName());
+        assertEquals(epic.getDescription(), savedEpic.getDescription());
+        assertEquals(epic.getStatus(), savedEpic.getStatus());
+
+        Subtask savedSubtask = loaded.getSubtaskById(subtaskId);
+        assertEquals(subtask.getName(), savedSubtask.getName());
+        assertEquals(subtask.getDescription(), savedSubtask.getDescription());
+        assertEquals(subtask.getStatus(), savedSubtask.getStatus());
+        assertEquals(subtask.getEpicId(), savedSubtask.getEpicId());
+
+        assertTrue(savedEpic.getSubtaskIds().contains(subtaskId));
     }
 }

@@ -39,7 +39,7 @@ public class InMemoryTaskManager implements TaskManager {
         return epic.getId();
     }
 
-    private void updateEpicStatus(Epic epic) {
+    protected void updateEpicStatus(Epic epic) {
         if (epic.getSubtaskIds().isEmpty()) {
             epic.setStatus(Status.NEW);
             return;
@@ -102,7 +102,7 @@ public class InMemoryTaskManager implements TaskManager {
         Task task = tasks.get(id);
         if (task != null) {
             historyManager.add(task);
-            return new Task(task); // Возвращаем копию
+            return task; // Возвращаем копию
         }
         return task;
     }

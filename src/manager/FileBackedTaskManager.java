@@ -18,43 +18,19 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             writer.write("id,type,name,status,description,epic\n");
 
             for (Task task : tasks.values()) {
-                writer.write(toString(task) + "\n");
+                writer.write(StringFormatter.toString(task) + "\n");
             }
             for (Epic epic : epics.values()) {
-                writer.write(toString(epic) + "\n");
+                writer.write(StringFormatter.toString(epic) + "\n");
             }
             for (Subtask subtask : subtasks.values()) {
-                writer.write(toString(subtask) + "\n");
+                writer.write(StringFormatter.toString(subtask) + "\n");
             }
         } catch (IOException e) {
             throw new ManagerSaveException("Ошибка сохранения в файл", e);
         }
     }
 
-    // Метод сохранения задачи в строку
-    private String toString(Task task) {
-        String type;
-        if (task instanceof Epic) {
-            type = "EPIC";
-        } else if (task instanceof Subtask) {
-            type = "SUBTASK";
-        } else {
-            type = "TASK";
-        }
-
-        String epicId = "";
-        if (task instanceof Subtask) {
-            epicId = String.valueOf(((Subtask) task).getEpicId());
-        }
-
-        return String.format("%d,%s,%s,%s,%s,%s",
-                task.getId(),
-                type,
-                task.getName(),
-                task.getStatus(),
-                task.getDescription(),
-                epicId);
-    }
 
     // Восстановление менеджера из файла
     public static FileBackedTaskManager loadFromFile(File file) {
@@ -66,14 +42,24 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
             // Пропускаем заголовок
             for (int i = 1; i < lines.length; i++) {
-                Task task = fromString(lines[i]);
+                Task task = StringFormatter.fromString(lines[i]);
                 if (task != null) {
-                    if (task instanceof Epic) {
-                        manager.epics.put(task.getId(), (Epic) task);
-                    } else if (task instanceof Subtask) {
-                        manager.subtasks.put(task.getId(), (Subtask) task);
-                    } else {
-                        manager.tasks.put(task.getId(), task);
+                    switch (task.getType()) {  // Используем enum вместо instanceof
+                        case EPIC:
+                            manager.epics.put(task.getId(), (Epic) task);
+                            break;
+                        case SUBTASK:
+                            Subtask subtask = (Subtask) task;
+                            manager.subtasks.put(task.getId(), subtask);
+                            Epic epic = manager.epics.get(subtask.getEpicId());
+                            if (epic != null) {
+                                epic.addSubtask(subtask.getId());
+                                manager.updateEpicStatus(epic);
+                            }
+                            break;
+                        case TASK:
+                            manager.tasks.put(task.getId(), task);
+                            break;
                     }
                     if (task.getId() >= manager.nextId) {
                         manager.nextId = task.getId() + 1;
@@ -87,36 +73,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         return manager;
     }
 
-    // Создание задачи из строки
-    private static Task fromString(String value) {
-        String[] parts = value.split(",");
-        int id = Integer.parseInt(parts[0]);
-        TaskType type = TaskType.valueOf(parts[1]);
-        String name = parts[2];
-        Status status = Status.valueOf(parts[3]);
-        String description = parts[4];
-
-        switch (type) {
-            case TASK:
-                Task task = new Task(name, description);
-                task.setId(id);
-                task.setStatus(status);
-                return task;
-            case EPIC:
-                Epic epic = new Epic(name, description);
-                epic.setId(id);
-                epic.setStatus(status);
-                return epic;
-            case SUBTASK:
-                int epicId = Integer.parseInt(parts[5]);
-                Subtask subtask = new Subtask(name, description, epicId);
-                subtask.setId(id);
-                subtask.setStatus(status);
-                return subtask;
-            default:
-                return null;
-        }
-    }
 
     // Переопределение методов с сохранением
     @Override
