@@ -2,7 +2,7 @@ package model;
 
 import java.util.Objects;
 
-public class Task {
+public abstract class Task {
     private int id;
     private String name;
     private String description;
@@ -21,6 +21,8 @@ public class Task {
         this.description = other.description;
         this.status = other.status;
     }
+
+    public abstract TaskType getType();
 
     public int getId() {
         return id;

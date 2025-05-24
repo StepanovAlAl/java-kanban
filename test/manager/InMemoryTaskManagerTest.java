@@ -15,7 +15,7 @@ class InMemoryTaskManagerTest {
     }
 
     void createTaskShouldWork() {
-        Task task = new Task("Task", "Description");
+        Task task = new TaskInstance("Task", "Description");
         int taskId = taskManager.createTask(task);
 
         assertNotNull(taskManager.getTaskById(taskId), "Задача не найдена");
@@ -45,8 +45,8 @@ class InMemoryTaskManagerTest {
 
     @Test
     void getAllTasksShouldWork() {
-        Task task1 = new Task("Task 1", "Description");
-        Task task2 = new Task("Task 2", "Description");
+        Task task1 = new TaskInstance("Task 1", "Description");
+        Task task2 = new TaskInstance("Task 2", "Description");
         taskManager.createTask(task1);
         taskManager.createTask(task2);
 
@@ -55,7 +55,7 @@ class InMemoryTaskManagerTest {
 
     @Test
     void deleteTaskShouldWork() {
-        Task task = new Task("Task", "Description");
+        Task task = new TaskInstance("Task", "Description");
         int taskId = taskManager.createTask(task);
 
         taskManager.deleteTask(taskId);
@@ -91,12 +91,12 @@ class InMemoryTaskManagerTest {
 
     @Test
     void updateTaskShouldNotAffectHistory() {
-        Task task = new Task("Task", "Description");
+        Task task = new TaskInstance("Task", "Description");
         int taskId = taskManager.createTask(task);
 
         taskManager.getTaskById(taskId); // Добавляем в историю
 
-        Task updatedTask = new Task("Updated", "Updated");
+        Task updatedTask = new TaskInstance("Updated", "Updated");
         updatedTask.setId(taskId);
         taskManager.updateTask(updatedTask);
 
@@ -121,7 +121,7 @@ class InMemoryTaskManagerTest {
 
     @Test
     void historyShouldNotContainDuplicates() {
-        Task task = new Task("Task", "Description");
+        Task task = new TaskInstance("Task", "Description");
         int taskId = taskManager.createTask(task);
 
         taskManager.getTaskById(taskId);
@@ -133,8 +133,8 @@ class InMemoryTaskManagerTest {
 
     @Test
     void deleteAllTasksShouldWork() {
-        Task task1 = new Task("Task 1", "Description");
-        Task task2 = new Task("Task 2", "Description");
+        Task task1 = new TaskInstance("Task 1", "Description");
+        Task task2 = new TaskInstance("Task 2", "Description");
         taskManager.createTask(task1);
         taskManager.createTask(task2);
 
