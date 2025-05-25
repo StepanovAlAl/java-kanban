@@ -5,6 +5,7 @@ import model.*;
 import java.util.*;
 import java.time.Duration;
 import java.time.LocalDateTime;
+
 public class InMemoryTaskManager implements TaskManager {
     protected HashMap<Integer, Task> tasks = new HashMap<>();
     protected HashMap<Integer, Subtask> subtasks = new HashMap<>();
@@ -316,6 +317,7 @@ public class InMemoryTaskManager implements TaskManager {
         epic.setDuration(duration);
         epic.setEndTime(end);
     }
+
     private boolean hasTimeConflict(Task newTask, Task existingTask) {
         if (newTask.getStartTime() == null || existingTask.getStartTime() == null) {
             return false;
