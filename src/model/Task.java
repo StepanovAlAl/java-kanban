@@ -2,7 +2,7 @@ package model;
 
 import java.util.Objects;
 
-public abstract class Task {
+public class Task {
     private int id;
     private String name;
     private String description;
@@ -22,7 +22,9 @@ public abstract class Task {
         this.status = other.status;
     }
 
-    public abstract TaskType getType();
+    public TaskType getType() {
+        return TaskType.TASK;
+    }
 
     public int getId() {
         return id;

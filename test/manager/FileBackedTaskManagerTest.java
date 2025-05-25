@@ -34,7 +34,7 @@ class FileBackedTaskManagerTest {
     void testSaveAndLoadWithTasks() throws Exception {
 
         // Создаем задачи
-        Task task = new TaskInstance("Task", "Description");
+        Task task = new Task("Task", "Description");
         int taskId = manager.createTask(task);
 
         Epic epic = new Epic("Epic", "Epic description");
@@ -46,25 +46,11 @@ class FileBackedTaskManagerTest {
         // Загружаем обратно
         FileBackedTaskManager loaded = FileBackedTaskManager.loadFromFile(file);
 
-        assertEquals(1, loaded.getAllTasks().size());
-        assertEquals(1, loaded.getAllEpics().size());
-        assertEquals(1, loaded.getAllSubtasks().size());
-        Task savedTask = loaded.getTaskById(taskId);
-        assertEquals(task.getName(), savedTask.getName());
-        assertEquals(task.getDescription(), savedTask.getDescription());
-        assertEquals(task.getStatus(), savedTask.getStatus());
-
-        Epic savedEpic = loaded.getEpicById(epicId);
-        assertEquals(epic.getName(), savedEpic.getName());
-        assertEquals(epic.getDescription(), savedEpic.getDescription());
-        assertEquals(epic.getStatus(), savedEpic.getStatus());
-
-        Subtask savedSubtask = loaded.getSubtaskById(subtaskId);
-        assertEquals(subtask.getName(), savedSubtask.getName());
-        assertEquals(subtask.getDescription(), savedSubtask.getDescription());
-        assertEquals(subtask.getStatus(), savedSubtask.getStatus());
-        assertEquals(subtask.getEpicId(), savedSubtask.getEpicId());
-
-        assertTrue(savedEpic.getSubtaskIds().contains(subtaskId));
+        assertEquals(manager.getAllTasks(), loaded.getAllTasks(),
+                "Списки задач не совпадают");
+        assertEquals(manager.getAllEpics(), loaded.getAllEpics(),
+                "Списки эпиков не совпадают");
+        assertEquals(manager.getAllSubtasks(), loaded.getAllSubtasks(),
+                "Списки подзадач не совпадают");
     }
 }

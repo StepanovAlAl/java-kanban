@@ -32,7 +32,7 @@ public final class StringFormatter {
 
         switch (type) {
             case TASK:
-                Task task = new TaskInstance(name, description);
+                Task task = new Task(name, description);
                 task.setId(id);
                 task.setStatus(status);
                 return task;

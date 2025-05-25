@@ -7,8 +7,8 @@ public class Main {
         TaskManager manager = Managers.getDefault();
 
         // Создаем две задачи
-        Task task1 = new TaskInstance("Task 1", "Description 1");
-        Task task2 = new TaskInstance("Task 2", "Description 2");
+        Task task1 = new Task("Task 1", "Description 1");
+        Task task2 = new Task("Task 2", "Description 2");
         int taskId1 = manager.createTask(task1);
         int taskId2 = manager.createTask(task2);
 
