@@ -13,10 +13,8 @@ public class InMemoryTaskManager implements TaskManager {
     protected int nextId = 1;
     protected HistoryManager historyManager = Managers.getDefaultHistory();
     private TreeSet<Task> prioritizedTasks = new TreeSet<>(
-            Comparator.comparing(
-                    Task::getStartTime,
-                    Comparator.nullsLast(Comparator.naturalOrder())
-            ));
+            Comparator.comparing(Task::getStartTime)
+    );
 
     @Override
     public int createTask(Task task) {
@@ -284,7 +282,7 @@ public class InMemoryTaskManager implements TaskManager {
         prioritizedTasks.remove(task);
     }
 
-    private void updateEpicTime(Epic epic) {
+    public void updateEpicTime(Epic epic) {
         List<Subtask> epicSubtasks = getSubtasksByEpicId(epic.getId());
 
         if (epicSubtasks.isEmpty()) {
@@ -332,7 +330,7 @@ public class InMemoryTaskManager implements TaskManager {
         return hasTimeOverlap(newTask, existingTask);
     }
 
-    public boolean hasTimeOverlap(Task task1, Task task2) {
+    private boolean hasTimeOverlap(Task task1, Task task2) {
         if (task1 == task2) return false;
         if (task1.getStartTime() == null || task2.getStartTime() == null) return false;
 
@@ -344,7 +342,7 @@ public class InMemoryTaskManager implements TaskManager {
         return !start1.isAfter(end2) && !start2.isAfter(end1);
     }
 
-    public boolean hasAnyTimeOverlap(Task task) {
+    private boolean hasAnyTimeOverlap(Task task) {
         if (task.getStartTime() == null) return false;
 
         return prioritizedTasks.stream()

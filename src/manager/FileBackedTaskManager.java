@@ -4,6 +4,8 @@ import model.*;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.time.LocalDateTime;
+import java.time.Duration;
 
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
@@ -15,7 +17,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     protected void save() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            writer.write("id,type,name,status,description,epic\n");
+            writer.write("id,type,name,status,description,epic,startTime,duration\n");
 
             for (Task task : tasks.values()) {
                 writer.write(StringFormatter.toString(task) + "\n");
@@ -55,6 +57,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                             if (epic != null) {
                                 epic.addSubtask(subtask.getId());
                                 manager.updateEpicStatus(epic);
+                                manager.updateEpicTime(epic);
                             }
                             break;
                         case TASK:

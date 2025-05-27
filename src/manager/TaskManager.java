@@ -36,6 +36,8 @@ public interface TaskManager {
 
     void updateEpic(Epic epic);
 
+    void updateEpicTime(Epic epic);
+
     void deleteTask(int id);
 
     void deleteSubtask(int id);
