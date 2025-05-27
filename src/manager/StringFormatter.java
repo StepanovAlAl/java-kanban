@@ -2,6 +2,9 @@ package manager;
 
 import model.*;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 public final class StringFormatter {
     private StringFormatter() {
     }
@@ -13,13 +16,26 @@ public final class StringFormatter {
         if (type == TaskType.SUBTASK) {
             epicId = String.valueOf(((Subtask) task).getEpicId());
         }
-        return String.format("%d,%s,%s,%s,%s,%s",
+
+        String startTimeStr = "";
+        if (task.getStartTime() != null) {
+            startTimeStr = task.getStartTime().toString();
+        }
+
+        String durationStr = "";
+        if (task.getDuration() != null) {
+            durationStr = String.valueOf(task.getDuration().toMinutes());
+        }
+
+        return String.format("%d,%s,%s,%s,%s,%s,%s,%s",
                 task.getId(),
                 type,
                 task.getName(),
                 task.getStatus(),
                 task.getDescription(),
-                epicId);
+                epicId,
+                startTimeStr,
+                durationStr);
     }
 
     public static Task fromString(String value) {
@@ -30,25 +46,33 @@ public final class StringFormatter {
         Status status = Status.valueOf(parts[3]);
         String description = parts[4];
 
+        Task task;
         switch (type) {
             case TASK:
-                Task task = new Task(name, description);
-                task.setId(id);
-                task.setStatus(status);
-                return task;
-
+                task = new Task(name, description);
+                break;
             case EPIC:
-                Epic epic = new Epic(name, description);
-                epic.setId(id);
-                epic.setStatus(status);
-                return epic;
-
+                task = new Epic(name, description);
+                break;
             default: //SUBTASK
                 int epicId = Integer.parseInt(parts[5]);
-                Subtask subtask = new Subtask(name, description, epicId);
-                subtask.setId(id);
-                subtask.setStatus(status);
-                return subtask;
+                task = new Subtask(name, description, epicId);
+                break;
         }
+
+        task.setId(id);
+        task.setStatus(status);
+
+        if (parts.length > 6 && !parts[6].isEmpty()) {
+            LocalDateTime startTime = LocalDateTime.parse(parts[6]);
+            task.setStartTime(startTime);
+        }
+
+        if (parts.length > 7 && !parts[7].isEmpty()) {
+            Duration duration = Duration.ofMinutes(Long.parseLong(parts[7]));
+            task.setDuration(duration);
+        }
+
+        return task;
     }
 }
