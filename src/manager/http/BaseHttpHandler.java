@@ -3,6 +3,8 @@ package manager.http;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import manager.TaskManager;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,11 +13,16 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-public class BaseHttpHandler {
+public abstract class BaseHttpHandler implements HttpHandler {
     protected static final Gson gson = new GsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
             .registerTypeAdapter(Duration.class, new DurationAdapter())
             .create();
+    protected final TaskManager taskManager;
+
+    protected BaseHttpHandler(TaskManager taskManager) {
+        this.taskManager = taskManager;
+    }
 
     protected void sendText(HttpExchange exchange, String text, int statusCode) throws IOException {
         byte[] resp = text.getBytes(StandardCharsets.UTF_8);

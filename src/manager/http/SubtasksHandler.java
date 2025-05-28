@@ -1,19 +1,16 @@
 package manager.http;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import manager.ManagerSaveException;
+import manager.ManagerSaveException; // Добавлен импорт
 import manager.TaskManager;
 import model.Subtask;
 
 import java.io.IOException;
-import java.util.Optional;
 
-public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
-    private final TaskManager taskManager;
+public class SubtasksHandler extends BaseHttpHandler {
 
     public SubtasksHandler(TaskManager taskManager) {
-        this.taskManager = taskManager;
+        super(taskManager);  // Явно передаем taskManager в базовый класс
     }
 
     @Override
@@ -26,51 +23,19 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
             switch (method) {
                 case "GET":
                     if (pathParts.length == 2) {
-                        // GET /subtasks
-                        String response = gson.toJson(taskManager.getAllSubtasks());
-                        sendText(exchange, response);
+                        handleGetAllSubtasks(exchange);
                     } else if (pathParts.length == 3) {
-                        // GET /subtasks/{id}
-                        int id = Integer.parseInt(pathParts[2]);
-                        Optional<Subtask> subtask = Optional.ofNullable(taskManager.getSubtaskById(id));
-                        if (subtask.isPresent()) {
-                            sendText(exchange, gson.toJson(subtask.get()));
-                        } else {
-                            sendNotFound(exchange);
-                        }
+                        handleGetSubtaskById(exchange, pathParts[2]);
                     }
                     break;
                 case "POST":
-                    // POST /subtasks
-                    Subtask newSubtask = readRequest(exchange.getRequestBody(), Subtask.class);
-                    if (newSubtask.getId() == 0) {
-                        // Create new subtask
-                        try {
-                            int subtaskId = taskManager.createSubtask(newSubtask);
-                            sendCreated(exchange, gson.toJson(taskManager.getSubtaskById(subtaskId)));
-                        } catch (ManagerSaveException e) {
-                            sendHasInteractions(exchange);
-                        }
-                    } else {
-                        // Update existing subtask
-                        try {
-                            taskManager.updateSubtask(newSubtask);
-                            sendCreated(exchange, gson.toJson(newSubtask));
-                        } catch (ManagerSaveException e) {
-                            sendHasInteractions(exchange);
-                        }
-                    }
+                    handlePostSubtask(exchange);
                     break;
                 case "DELETE":
                     if (pathParts.length == 3) {
-                        // DELETE /subtasks/{id}
-                        int id = Integer.parseInt(pathParts[2]);
-                        taskManager.deleteSubtask(id);
-                        sendText(exchange, "Subtask deleted");
+                        handleDeleteSubtask(exchange, pathParts[2]);
                     } else if (pathParts.length == 2) {
-                        // DELETE /subtasks
-                        taskManager.deleteAllSubtasks();
-                        sendText(exchange, "All subtasks deleted");
+                        handleDeleteAllSubtasks(exchange);
                     }
                     break;
                 default:
@@ -78,7 +43,50 @@ public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
             }
         } catch (Exception e) {
             sendInternalError(exchange);
-            e.printStackTrace();
         }
+    }
+
+    private void handleGetAllSubtasks(HttpExchange exchange) throws IOException {
+        sendText(exchange, gson.toJson(taskManager.getAllSubtasks()));
+    }
+
+    private void handleGetSubtaskById(HttpExchange exchange, String idStr) throws IOException {
+        int id = Integer.parseInt(idStr);
+        Subtask subtask = taskManager.getSubtaskById(id);
+        if (subtask != null) {
+            sendText(exchange, gson.toJson(subtask));
+        } else {
+            sendNotFound(exchange);
+        }
+    }
+
+    private void handlePostSubtask(HttpExchange exchange) throws IOException {
+        Subtask newSubtask = readRequest(exchange.getRequestBody(), Subtask.class);
+        if (newSubtask.getId() == 0) {
+            try {
+                int subtaskId = taskManager.createSubtask(newSubtask);
+                sendCreated(exchange, gson.toJson(taskManager.getSubtaskById(subtaskId)));
+            } catch (ManagerSaveException e) {
+                sendHasInteractions(exchange);
+            }
+        } else {
+            try {
+                taskManager.updateSubtask(newSubtask);
+                sendCreated(exchange, gson.toJson(newSubtask));
+            } catch (ManagerSaveException e) {
+                sendHasInteractions(exchange);
+            }
+        }
+    }
+
+    private void handleDeleteSubtask(HttpExchange exchange, String idStr) throws IOException {
+        int id = Integer.parseInt(idStr);
+        taskManager.deleteSubtask(id);
+        sendText(exchange, "Subtask deleted");
+    }
+
+    private void handleDeleteAllSubtasks(HttpExchange exchange) throws IOException {
+        taskManager.deleteAllSubtasks();
+        sendText(exchange, "All subtasks deleted");
     }
 }

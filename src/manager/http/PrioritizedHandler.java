@@ -1,30 +1,30 @@
 package manager.http;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import manager.TaskManager;
 
 import java.io.IOException;
 
-public class PrioritizedHandler extends BaseHttpHandler implements HttpHandler {
-    private final TaskManager taskManager;
+public class PrioritizedHandler extends BaseHttpHandler {
 
     public PrioritizedHandler(TaskManager taskManager) {
-        this.taskManager = taskManager;
+        super(taskManager);  // Передаем taskManager в базовый класс
     }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         try {
             if ("GET".equals(exchange.getRequestMethod())) {
-                String response = gson.toJson(taskManager.getPrioritizedTasks());
-                sendText(exchange, response);
+                handleGetPrioritizedTasks(exchange);
             } else {
                 sendNotFound(exchange);
             }
         } catch (Exception e) {
             sendInternalError(exchange);
-            e.printStackTrace();
         }
+    }
+
+    private void handleGetPrioritizedTasks(HttpExchange exchange) throws IOException {
+        sendText(exchange, gson.toJson(taskManager.getPrioritizedTasks()));
     }
 }

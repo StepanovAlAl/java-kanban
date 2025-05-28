@@ -1,30 +1,30 @@
 package manager.http;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import manager.TaskManager;
 
 import java.io.IOException;
 
-public class HistoryHandler extends BaseHttpHandler implements HttpHandler {
-    private final TaskManager taskManager;
+public class HistoryHandler extends BaseHttpHandler {
 
     public HistoryHandler(TaskManager taskManager) {
-        this.taskManager = taskManager;
+        super(taskManager);  // Явно передаем taskManager в базовый класс
     }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         try {
             if ("GET".equals(exchange.getRequestMethod())) {
-                String response = gson.toJson(taskManager.getHistory());
-                sendText(exchange, response);
+                handleGetHistory(exchange);
             } else {
                 sendNotFound(exchange);
             }
         } catch (Exception e) {
             sendInternalError(exchange);
-            e.printStackTrace();
         }
+    }
+
+    private void handleGetHistory(HttpExchange exchange) throws IOException {
+        sendText(exchange, gson.toJson(taskManager.getHistory()));
     }
 }

@@ -1,7 +1,6 @@
 package manager.http;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import manager.ManagerSaveException;
 import manager.TaskManager;
 import model.Task;
@@ -9,11 +8,9 @@ import model.Task;
 import java.io.IOException;
 import java.util.Optional;
 
-public class TasksHandler extends BaseHttpHandler implements HttpHandler {
-    private final TaskManager taskManager;
-
+public class TasksHandler extends BaseHttpHandler {
     public TasksHandler(TaskManager taskManager) {
-        this.taskManager = taskManager;
+        super(taskManager);
     }
 
     @Override
@@ -26,51 +23,19 @@ public class TasksHandler extends BaseHttpHandler implements HttpHandler {
             switch (method) {
                 case "GET":
                     if (pathParts.length == 2) {
-                        // GET /tasks
-                        String response = gson.toJson(taskManager.getAllTasks());
-                        sendText(exchange, response);
+                        handleGetAllTasks(exchange);
                     } else if (pathParts.length == 3) {
-                        // GET /tasks/{id}
-                        int id = Integer.parseInt(pathParts[2]);
-                        Optional<Task> task = Optional.ofNullable(taskManager.getTaskById(id));
-                        if (task.isPresent()) {
-                            sendText(exchange, gson.toJson(task.get()));
-                        } else {
-                            sendNotFound(exchange);
-                        }
+                        handleGetTaskById(exchange, pathParts[2]);
                     }
                     break;
                 case "POST":
-                    // POST /tasks
-                    Task newTask = readRequest(exchange.getRequestBody(), Task.class);
-                    if (newTask.getId() == 0) {
-                        // Create new task
-                        try {
-                            int taskId = taskManager.createTask(newTask);
-                            sendCreated(exchange, gson.toJson(taskManager.getTaskById(taskId)));
-                        } catch (ManagerSaveException e) {
-                            sendHasInteractions(exchange);
-                        }
-                    } else {
-                        // Update existing task
-                        try {
-                            taskManager.updateTask(newTask);
-                            sendCreated(exchange, gson.toJson(newTask));
-                        } catch (ManagerSaveException e) {
-                            sendHasInteractions(exchange);
-                        }
-                    }
+                    handlePostTask(exchange);
                     break;
                 case "DELETE":
                     if (pathParts.length == 3) {
-                        // DELETE /tasks/{id}
-                        int id = Integer.parseInt(pathParts[2]);
-                        taskManager.deleteTask(id);
-                        sendText(exchange, "Task deleted");
+                        handleDeleteTask(exchange, pathParts[2]);
                     } else if (pathParts.length == 2) {
-                        // DELETE /tasks
-                        taskManager.deleteAllTasks();
-                        sendText(exchange, "All tasks deleted");
+                        handleDeleteAllTasks(exchange);
                     }
                     break;
                 default:
@@ -78,7 +43,50 @@ public class TasksHandler extends BaseHttpHandler implements HttpHandler {
             }
         } catch (Exception e) {
             sendInternalError(exchange);
-            e.printStackTrace();
         }
+    }
+
+    private void handleGetAllTasks(HttpExchange exchange) throws IOException {
+        sendText(exchange, gson.toJson(taskManager.getAllTasks()));
+    }
+
+    private void handleGetTaskById(HttpExchange exchange, String idStr) throws IOException {
+        int id = Integer.parseInt(idStr);
+        Task task = taskManager.getTaskById(id);  // Один вызов менеджера
+        if (task != null) {
+            sendText(exchange, gson.toJson(task));
+        } else {
+            sendNotFound(exchange);
+        }
+    }
+
+    private void handlePostTask(HttpExchange exchange) throws IOException {
+        Task newTask = readRequest(exchange.getRequestBody(), Task.class);
+        if (newTask.getId() == 0) {
+            try {
+                int taskId = taskManager.createTask(newTask);
+                sendCreated(exchange, gson.toJson(taskManager.getTaskById(taskId)));
+            } catch (ManagerSaveException e) {
+                sendHasInteractions(exchange);
+            }
+        } else {
+            try {
+                taskManager.updateTask(newTask);
+                sendCreated(exchange, gson.toJson(newTask));
+            } catch (ManagerSaveException e) {
+                sendHasInteractions(exchange);
+            }
+        }
+    }
+
+    private void handleDeleteTask(HttpExchange exchange, String idStr) throws IOException {
+        int id = Integer.parseInt(idStr);
+        taskManager.deleteTask(id);
+        sendText(exchange, "Task deleted");
+    }
+
+    private void handleDeleteAllTasks(HttpExchange exchange) throws IOException {
+        taskManager.deleteAllTasks();
+        sendText(exchange, "All tasks deleted");
     }
 }
