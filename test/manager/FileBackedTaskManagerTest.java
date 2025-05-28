@@ -53,6 +53,12 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
                 () -> assertEquals(1, loaded.getAllEpics().size(), "Неверное количество эпиков"),
                 () -> assertEquals(1, loaded.getAllSubtasks().size(), "Неверное количество подзадач")
         );
+
+        assertAll(
+                () -> assertEquals(manager.getAllTasks(), loaded.getAllTasks(), "Списки задач не совпадают"),
+                () -> assertEquals(manager.getAllEpics(), loaded.getAllEpics(), "Списки эпиков не совпадают"),
+                () -> assertEquals(manager.getAllSubtasks(), loaded.getAllSubtasks(), "Списки подзадач не совпадают")
+        );
     }
 
     @Test

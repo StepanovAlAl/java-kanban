@@ -282,7 +282,7 @@ public class InMemoryTaskManager implements TaskManager {
         prioritizedTasks.remove(task);
     }
 
-    public void updateEpicTime(Epic epic) {
+    protected void updateEpicTime(Epic epic) {
         List<Subtask> epicSubtasks = getSubtasksByEpicId(epic.getId());
 
         if (epicSubtasks.isEmpty()) {
