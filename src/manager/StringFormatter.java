@@ -79,14 +79,15 @@ public final class StringFormatter {
         task.setId(id);
         task.setStatus(status);
 
-        if (parts.length > 6 && !parts[6].isEmpty()) {
-            LocalDateTime startTime = LocalDateTime.parse(parts[6]);
-            task.setStartTime(startTime);
-        }
-
-        if (parts.length > 7 && !parts[7].isEmpty()) {
-            Duration duration = Duration.ofMinutes(Long.parseLong(parts[7]));
-            task.setDuration(duration);
+        if (type != TaskType.EPIC) {
+            if (parts.length > 6 && !parts[6].isEmpty()) {
+                LocalDateTime startTime = LocalDateTime.parse(parts[6]);
+                task.setStartTime(startTime);
+            }
+            if (parts.length > 7 && !parts[7].isEmpty()) {
+                Duration duration = Duration.ofMinutes(Long.parseLong(parts[7]));
+                task.setDuration(duration);
+            }
         }
 
         return task;

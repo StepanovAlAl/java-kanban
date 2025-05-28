@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -42,22 +43,38 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
 
     @Test
     void shouldSaveAndLoadTasksCorrectly() {
-        manager.createTask(task);
-        manager.createEpic(epic);
-        manager.createSubtask(subtask);
+        // Создаем тестовые данные
+        Task task = new Task("Test Task", "Description");
+        task.setStartTime(LocalDateTime.now());
+        task.setDuration(Duration.ofMinutes(30));
+        int taskId = manager.createTask(task);
 
+        Epic epic = new Epic("Test Epic", "Description");
+        int epicId = manager.createEpic(epic);
+
+        Subtask subtask = new Subtask("Test Subtask", "Description", epicId);
+        subtask.setStartTime(LocalDateTime.now().plusHours(1));
+        subtask.setDuration(Duration.ofMinutes(15));
+        int subtaskId = manager.createSubtask(subtask);
+
+        // Получаем списки ДО сохранения
+        List<Task> originalTasks = manager.getAllTasks();
+        List<Epic> originalEpics = manager.getAllEpics();
+        List<Subtask> originalSubtasks = manager.getAllSubtasks();
+
+        // Сохраняем и загружаем
         FileBackedTaskManager loaded = FileBackedTaskManager.loadFromFile(file);
 
-        assertAll(
-                () -> assertEquals(1, loaded.getAllTasks().size(), "Неверное количество задач"),
-                () -> assertEquals(1, loaded.getAllEpics().size(), "Неверное количество эпиков"),
-                () -> assertEquals(1, loaded.getAllSubtasks().size(), "Неверное количество подзадач")
-        );
+        // Получаем списки ПОСЛЕ загрузки
+        List<Task> loadedTasks = loaded.getAllTasks();
+        List<Epic> loadedEpics = loaded.getAllEpics();
+        List<Subtask> loadedSubtasks = loaded.getAllSubtasks();
 
+        // Проверяем
         assertAll(
-                () -> assertEquals(manager.getAllTasks(), loaded.getAllTasks(), "Списки задач не совпадают"),
-                () -> assertEquals(manager.getAllEpics(), loaded.getAllEpics(), "Списки эпиков не совпадают"),
-                () -> assertEquals(manager.getAllSubtasks(), loaded.getAllSubtasks(), "Списки подзадач не совпадают")
+                () -> assertEquals(originalTasks, loadedTasks, "Списки задач не совпадают"),
+                () -> assertEquals(originalEpics, loadedEpics, "Списки эпиков не совпадают"),
+                () -> assertEquals(originalSubtasks, loadedSubtasks, "Списки подзадач не совпадают")
         );
     }
 

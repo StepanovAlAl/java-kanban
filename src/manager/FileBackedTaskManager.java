@@ -46,17 +46,9 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     switch (task.getType()) {  // Используем enum вместо instanceof
                         case EPIC:
                             manager.epics.put(task.getId(), (Epic) task);
-                            manager.updateEpicTime((Epic) task);
                             break;
                         case SUBTASK:
-                            Subtask subtask = (Subtask) task;
-                            manager.subtasks.put(task.getId(), subtask);
-                            Epic epic = manager.epics.get(subtask.getEpicId());
-                            if (epic != null) {
-                                epic.addSubtask(subtask.getId());
-                                manager.updateEpicStatus(epic);
-                                manager.updateEpicTime(epic);
-                            }
+                            manager.subtasks.put(task.getId(), (Subtask) task);
                             break;
                         case TASK:
                             manager.tasks.put(task.getId(), task);
@@ -66,6 +58,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                         manager.nextId = task.getId() + 1;
                     }
                 }
+            }
+            for (Epic epic : manager.epics.values()) {
+                manager.updateEpicStatus(epic);
+                manager.updateEpicTime(epic);
             }
         } catch (IOException e) {
             throw new ManagerSaveException("Ошибка загрузки из файла", e);
