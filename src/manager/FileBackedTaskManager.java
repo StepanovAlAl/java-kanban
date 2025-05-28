@@ -14,7 +14,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     protected void save() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            writer.write("id,type,name,status,description,epic,startTime,duration\n");
+            writer.write("id,type,name,status,description,epic,startTime,duration,subtaskIds\n");
 
             for (Task task : tasks.values()) {
                 writer.write(StringFormatter.toString(task) + "\n");
@@ -46,6 +46,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     switch (task.getType()) {  // Используем enum вместо instanceof
                         case EPIC:
                             manager.epics.put(task.getId(), (Epic) task);
+                            manager.updateEpicTime((Epic) task);
                             break;
                         case SUBTASK:
                             Subtask subtask = (Subtask) task;
