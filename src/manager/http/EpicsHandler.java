@@ -69,7 +69,8 @@ public class EpicsHandler extends BaseHttpHandler {
         Epic newEpic = readRequest(exchange.getRequestBody(), Epic.class);
         if (newEpic.getId() == 0) {
             int epicId = taskManager.createEpic(newEpic);
-            sendCreated(exchange, gson.toJson(taskManager.getEpicById(epicId)));
+            newEpic.setId(epicId);
+            sendCreated(exchange, gson.toJson(newEpic));
         } else {
             taskManager.updateEpic(newEpic);
             sendCreated(exchange, gson.toJson(newEpic));
