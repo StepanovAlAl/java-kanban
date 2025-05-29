@@ -14,7 +14,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     protected void save() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            writer.write("id,type,name,status,description,epic,startTime,duration\n");
+            writer.write("id,type,name,status,description,epic,startTime,duration,subtaskIds\n");
 
             for (Task task : tasks.values()) {
                 writer.write(StringFormatter.toString(task) + "\n");
@@ -48,14 +48,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                             manager.epics.put(task.getId(), (Epic) task);
                             break;
                         case SUBTASK:
-                            Subtask subtask = (Subtask) task;
-                            manager.subtasks.put(task.getId(), subtask);
-                            Epic epic = manager.epics.get(subtask.getEpicId());
-                            if (epic != null) {
-                                epic.addSubtask(subtask.getId());
-                                manager.updateEpicStatus(epic);
-                                manager.updateEpicTime(epic);
-                            }
+                            manager.subtasks.put(task.getId(), (Subtask) task);
                             break;
                         case TASK:
                             manager.tasks.put(task.getId(), task);
@@ -65,6 +58,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                         manager.nextId = task.getId() + 1;
                     }
                 }
+            }
+            for (Epic epic : manager.epics.values()) {
+                manager.updateEpicStatus(epic);
+                manager.updateEpicTime(epic);
             }
         } catch (IOException e) {
             throw new ManagerSaveException("Ошибка загрузки из файла", e);

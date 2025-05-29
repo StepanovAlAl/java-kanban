@@ -27,7 +27,14 @@ public final class StringFormatter {
             durationStr = String.valueOf(task.getDuration().toMinutes());
         }
 
-        return String.format("%d,%s,%s,%s,%s,%s,%s,%s",
+        // Для эпиков добавляем список подзадач
+        String subtaskIds = "";
+        if (type == TaskType.EPIC) {
+            subtaskIds = String.join(";", ((Epic) task).getSubtaskIds().stream()
+                    .map(String::valueOf)
+                    .toArray(String[]::new));
+        }
+        return String.format("%d,%s,%s,%s,%s,%s,%s,%s,%s",
                 task.getId(),
                 type,
                 task.getName(),
@@ -35,7 +42,8 @@ public final class StringFormatter {
                 task.getDescription(),
                 epicId,
                 startTimeStr,
-                durationStr);
+                durationStr,
+                subtaskIds);
     }
 
     public static Task fromString(String value) {
@@ -52,7 +60,15 @@ public final class StringFormatter {
                 task = new Task(name, description);
                 break;
             case EPIC:
-                task = new Epic(name, description);
+                Epic epic = new Epic(name, description);
+                task = epic;
+                // Восстанавливаем список подзадач для эпика
+                if (parts.length > 8 && !parts[8].isEmpty()) {
+                    String[] subtaskIds = parts[8].split(";");
+                    for (String subtaskId : subtaskIds) {
+                        epic.addSubtask(Integer.parseInt(subtaskId));
+                    }
+                }
                 break;
             default: //SUBTASK
                 int epicId = Integer.parseInt(parts[5]);
@@ -63,14 +79,15 @@ public final class StringFormatter {
         task.setId(id);
         task.setStatus(status);
 
-        if (parts.length > 6 && !parts[6].isEmpty()) {
-            LocalDateTime startTime = LocalDateTime.parse(parts[6]);
-            task.setStartTime(startTime);
-        }
-
-        if (parts.length > 7 && !parts[7].isEmpty()) {
-            Duration duration = Duration.ofMinutes(Long.parseLong(parts[7]));
-            task.setDuration(duration);
+        if (type != TaskType.EPIC) {
+            if (parts.length > 6 && !parts[6].isEmpty()) {
+                LocalDateTime startTime = LocalDateTime.parse(parts[6]);
+                task.setStartTime(startTime);
+            }
+            if (parts.length > 7 && !parts[7].isEmpty()) {
+                Duration duration = Duration.ofMinutes(Long.parseLong(parts[7]));
+                task.setDuration(duration);
+            }
         }
 
         return task;
